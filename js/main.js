@@ -12,6 +12,8 @@ let count = 200;
 let size;
 let box;
 
+let mouse = new THREE.Vector2(-2, -2);
+
 function onResizeWindow() {
   let width = window.innerWidth;
   let height = window.innerHeight;
@@ -61,8 +63,28 @@ function init() {
     scene.add(box);
   }
 
+  // マウス座標の取得
+  document.addEventListener('mousemove', function(e) {
+    let rect = e.target.getBoundingClientRect();
+    // WebGLの座標系に変換
+    mouse.x = (e.clientX - rect.left) / width * 2 - 1;
+    mouse.y = (e.clientY - rect.top) / height * -1 * 2 + 1;
+  });
+
   function render() {
+    let raycaster = new THREE.Raycaster();
+    let objs;
+
     requestAnimationFrame(render);
+
+    // マウスから3D空間に光線を射出
+    raycaster.setFromCamera(mouse, camera);
+
+    // 光線に当たった物体を取得、操作
+    objs = raycaster.intersectObjects(scene.children);
+    if (objs.length > 0) {
+      objs[0].object.material.emissive = new THREE.Color(0x999999);
+    }
 
     controls.update();
     renderer.render(scene, camera);
